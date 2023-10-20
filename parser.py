@@ -17,6 +17,7 @@ EXPR_LV2 = EXPR_LV1 + PLUS_MINUS + EXPR_LV1
 * = EXPR_LV2
 """
 
+from icecream import ic
 
 class Parser:
     def __init__(self, tokens: list[str]):
@@ -56,13 +57,13 @@ class Parser:
     def number_token(self, error=True):  # [0-9]+
         token = self.next()
 
-        print("Number: ", token)
+        ic("Number: ", token)
 
         if token and token.isdigit():
             return token
         elif error:
-            print("Syntax error: Expected number, got:", token)
-            print(self.position, len(self.tokens))
+            ic("Syntax error: Expected number, got:", token)
+            ic(self.position, len(self.tokens))
             exit(1)
 
     def decimal(self):  # '-'? + NUMBER_TOKEN
@@ -72,9 +73,21 @@ class Parser:
         if not (minus is None or minus == "-"):  # '-'?
             if minus.isdigit():
                 number = minus
+            elif minus == "(":
+                expr = self.expr_lv2()
+                tok = self.current()
+
+                if tok != ")":
+                    ic("Syntax error: Expected ')' but found:", tok)
+                    exit(1)
+
+                self.next()
+
+                ic("Inner:", expr)
+                
+                return expr
             else:
-                print("Syntax error: Expected number, got:", minus)
-                print(self.position, len(self.tokens))
+                ic("Syntax error: Expected number, got:", minus)
                 exit(1)
         else:
             number = self.number_token(True) # NUMBER_TOKEN
@@ -117,6 +130,7 @@ class Parser:
             sign = self.plus_minus()
 
             if sign is None:
+                self._prev()
                 return left
 
             right = self.expr_lv1()
@@ -128,4 +142,4 @@ class Parser:
 
 
     def parse(self):  # * = EXPR_LV2
-        print(self.expr_lv2())
+        ic(self.expr_lv2())
