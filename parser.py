@@ -13,6 +13,8 @@ EXPR_LV1 = DECIMAL + (MUL_DIV + DECIMAL)+
          | DECIMAL
 
 EXPR_LV2 = EXPR_LV1 + (PLUS_MINUS + EXPR_LV1)+
+
+* = EXPR_LV2
 """
 
 
@@ -54,14 +56,19 @@ class Parser:
 
         return self.tokens[self.position]
 
-    def number_token(self):
+    def number_token(self, error=True):  # [0-9]+
         token = self.next()
 
         if token and token.isdigit():
             return token
+        elif error:
+            print("Syntax error: Expected number, got:", token)
+            print(self.position, len(self.tokens))
+            exit(1)
 
-    def decimal(self):
+    def decimal(self):  # '-'? + NUMBER_TOKEN
         minus = self.next()
+
         real_minus = minus == "-"
 
         if minus == "(":
@@ -86,19 +93,19 @@ class Parser:
 
         return (-1 if minus == "-" else 1) * int(number)
 
-    def plus_minus(self):
+    def plus_minus(self):  # ('+' | '-')
         token = self.next()
 
         if token in ('+', '-'):
             return token
 
-    def mul_div(self):
+    def mul_div(self):  # ('*' | '/')
         token = self.next()
 
         if token in ('*', '/'):
             return token
 
-    def expr_lv1(self):
+    def expr_lv1(self):  # (DECIMAL + MUL_DIV + DECIMAL) | DECIMAL
         left = self.decimal()
 
         while True:
@@ -115,7 +122,7 @@ class Parser:
             elif sign == "/":
                 left = left / right
 
-    def expr_lv2(self):
+    def expr_lv2(self):  # (DECIMAL + EXPR_LV1 + DECIMAL)
         left = self.expr_lv1()
 
         while True:
@@ -130,7 +137,6 @@ class Parser:
                 left = left + right
             elif sign == "-":
                 left = left - right
-
 
     def parse(self):
         print(self.expr_lv2())
