@@ -2,10 +2,11 @@ import tokenizer
 import parser
 
 if __name__ == "__main__":
-    code = "3 * 4 - 6 + 2 * 3"  # 12
+    while True:
+        code = input("> ")
 
-    tokens = tokenizer.tokenize(code)
+        tokens = tokenizer.tokenize(code)
+        # print(tokens)
 
-    prs = parser.Parser(tokens)
-
-    print(prs.parse())
+        prs = parser.Parser(tokens)
+        print(prs.parse())
